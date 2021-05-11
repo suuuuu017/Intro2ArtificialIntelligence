@@ -22,6 +22,11 @@ def buyLotsOfFruit(orderList):
     """
     totalCost = 0.0
     "*** YOUR CODE HERE ***"
+    for key, val in orderList:
+        if key not in fruitPrices.keys():
+            print('No %s in shop' % key)
+        else:
+            totalCost = totalCost + val * fruitPrices[key]
     return totalCost
 
 
