@@ -289,20 +289,25 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
         "*** YOUR CODE HERE ***"
-	    util.raiseNotDefined()
+        cornerState = {0:1, 1:1, 2:1, 3:1}
+        startState = (self.startingPosition, cornerState)
+        return startState
+        util.raiseNotDefined()
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-	    util.raiseNotDefined()
+        return all(x == 0 for x in state[1].values())
+        util.raiseNotDefined()
 
     def getSuccessors(self, state):
         """
@@ -326,8 +331,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-            
-                
+            x, y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            nextCorner = state[1].copy()
+            if not self.walls[nextx][nexty]:
+                for key in self.corners:
+                    if self.corners[key] == (nextx, nexty):
+                        nextCorner[key] = 0
+                nextState = ((nextx, nexty), nextCorner)
+                cost = 1
+                successors.append((action, cost, nextState))
+
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -361,6 +376,16 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
     "*** YOUR CODE HERE ***"
+    if CornersProblem.isGoalState(state, problem):
+        return 0
+    else:
+        max = -1
+        for key in state[1]:
+            if state[1][key]:
+                dis = manhattanHeuristic(state[0], CornersProblem.corners[key])
+                if dis > max:
+                    max = dis
+        return max
     return 0 # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
