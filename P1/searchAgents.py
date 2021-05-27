@@ -376,13 +376,13 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
     "*** YOUR CODE HERE ***"
-    if CornersProblem.isGoalState(state, problem):
+    if problem.isGoalState(state):
         return 0
     else:
         max = -1
         for key in state[1]:
             if state[1][key]:
-                dis = manhattanHeuristic(state[0], CornersProblem.corners[key])
+                dis = abs(state[0][0] - problem.corners[key][0]) + abs(state[0][1] - problem.corners[key][1])
                 if dis > max:
                     max = dis
         return max
