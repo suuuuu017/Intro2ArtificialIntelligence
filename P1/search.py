@@ -167,7 +167,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     closed = []
     fringe = util.PriorityQueue()
     path = []
-    cost = heuristic(problem.getStartState(), problem)
+    # cost = heuristic(problem.getStartState(), problem)
+    cost = 0
+    h = heuristic(problem.getStartState(), problem)
     startState = (problem.getStartState(), path, cost)
 
     fringe.push(startState, cost)
@@ -179,9 +181,10 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             closed.append(node)
             for successor in problem.getSuccessors(node):
                 newPath = path + [successor[0]]
-                newCost = cost + successor[1] + heuristic(successor[2], problem)
+                newCost = cost + successor[1]
+                newH = cost + successor[1] + heuristic(successor[2], problem)
                 newState = (successor[2], newPath, newCost)
-                fringe.update(newState, newCost)
+                fringe.update(newState, newH)
                 # TODO: why not push
     return path
     util.raiseNotDefined()
