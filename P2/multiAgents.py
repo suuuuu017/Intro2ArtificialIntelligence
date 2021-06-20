@@ -60,7 +60,21 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        return successorGameState.getScore()
+        score = 1
+        foodDistance = [manhattanDistance(food, newPos) for food in newFood.asList()]
+        foodDistanceTotal = sum(foodDistance)
+        ghostDistance  = [manhattanDistance(newPos, ghostPos)
+                          for ghostPos in successorGameState.getGhostPositions()]
+        ghostDistanceTotal = sum(ghostDistance)
+        if foodDistanceTotal:
+            score = score * (ghostDistanceTotal ** 1/3) / foodDistanceTotal
+        else:
+            if(newScaredTimes):
+                score = score / (ghostDistanceTotal / 2.0)
+            else:
+                score = score * (ghostDistanceTotal ** 1/3)
+        return score
+        # return successorGameState.getScore()
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -121,7 +135,41 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         "*** YOUR CODE HERE ***"
+        depth = self.depth * gameState.getNumAgents()
+
+        _, action = self.dispatch(gameState, depth)
+        return action
         util.raiseNotDefined()
+
+    def maxVal(self, gameState, depth):
+        v = -1000000000
+        actions = gameState.getLegalActions(0)
+        dict = {}
+        for action in actions:
+            state = gameState.generateSuccessor(0, action)
+            dict[self.evaluationFunction(state)] = action
+            v = max(v, self.evaluationFunction(state))
+        return (v, dict[v])
+
+    def minVal(self, gameState, depth):
+        v = 1000000000
+        agent = depth % gameState.getNumAgents()
+        actions = gameState.getLegalActions(agent)
+        dict = {}
+        for action in actions:
+            state = gameState.generateSuccessor(agent, action)
+            dict[self.evaluationFunction(state)] = action
+            v = min(v, self.evaluationFunction(state))
+        return (v, dict[v])
+
+    def dispatch(self, gameState, depth):
+        if(gameState.isWin() or gameState.isLose() or depth == 0):
+            return self.evaluationFunction(gameState)
+        elif((depth) % gameState.getNumAgents() == 0):
+            return self.maxVal(gameState, depth - 1)
+        elif((depth) % gameState.getNumAgents() != 0):
+            return self.minVal(gameState, depth - 1)
+
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
