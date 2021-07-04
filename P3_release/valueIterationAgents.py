@@ -34,6 +34,13 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
+        for i in range(self.iterations):
+            newValue = self.values.copy()
+            for state in self.mdp.getStates():
+                bestAction = self.computeActionFromValues(state)
+                if bestAction:
+                    newValue[state] = self.computeQValueFromValues(state, bestAction)
+            self.values = newValue
 
 
     def getValue(self, state):
@@ -49,6 +56,11 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
+        probList = self.mdp.getTransitionStatesAndProbs(state, action)
+        QVal = 0
+        for nextState, prob in probList:
+            QVal = prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState]) + QVal
+        return QVal
         util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
@@ -61,6 +73,21 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
+        actionList = self.mdp.getPossibleActions(state)
+        if not len(actionList):
+            return None
+        valueList = util.Counter()
+        for action in actionList:
+            val = 0
+            probList = self.mdp.getTransitionStatesAndProbs(state, action)
+            for nextState, prob in probList:
+                # print(val)
+                val = prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState]) + val
+            valueList[action] = val
+        valueList.sortedKeys()
+        # import pdb; pdb.set_trace()
+        bestAction = valueList.argMax()
+        return bestAction
         util.raiseNotDefined()
 
     def getPolicy(self, state):
