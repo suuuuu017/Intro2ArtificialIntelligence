@@ -157,4 +157,51 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        predlist = util.Counter()
+        for state in self.mdp.getStates():
+            if self.mdp.isTerminal(state):
+                continue
+            actionList = self.mdp.getPossibleActions(state)
+            for action in actionList:
+                probList = self.mdp.getTransitionStatesAndProbs(state, action)
+                for nextState, prob in probList:
+                    if prob:
+                        if nextState in predlist.keys():
+                            predlist[nextState].add(state)
+                        else:
+                            predlist[nextState] = set()
+                            predlist[nextState].add(state)
 
+        priority = util.PriorityQueue()
+        for state in self.mdp.getStates():
+            if self.mdp.isTerminal(state):
+                continue
+            stateVal = self.getValue(state)
+            actionList = self.mdp.getPossibleActions(state)
+            QvalList = []
+            for action in actionList:
+                Qval = self.computeQValueFromValues(state, action)
+                QvalList.append(Qval)
+            highestQval = max(QvalList)
+            diff = abs(stateVal - highestQval)
+            priority.push(state, -diff)
+
+        for i in range(self.iterations):
+            if priority.isEmpty():
+                break
+            s = priority.pop()
+            if not self.mdp.isTerminal(s):
+                bestAction = self.computeActionFromValues(s)
+                if bestAction:
+                    self.values[s] = self.computeQValueFromValues(s, bestAction)
+            for pred in predlist[s]:
+                stateVal = self.getValue(pred)
+                actionList = self.mdp.getPossibleActions(pred)
+                QvalList = []
+                for action in actionList:
+                    Qval = self.computeQValueFromValues(pred, action)
+                    QvalList.append(Qval)
+                highestQval = max(QvalList)
+                diff = abs(stateVal - highestQval)
+                if diff > self.theta:
+                    priority.push(pred, -diff)
