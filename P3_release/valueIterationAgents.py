@@ -85,7 +85,6 @@ class ValueIterationAgent(ValueEstimationAgent):
                 val = prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState]) + val
             valueList[action] = val
         valueList.sortedKeys()
-        # import pdb; pdb.set_trace()
         bestAction = valueList.argMax()
         return bestAction
         util.raiseNotDefined()
@@ -204,4 +203,4 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
                 highestQval = max(QvalList)
                 diff = abs(stateVal - highestQval)
                 if diff > self.theta:
-                    priority.push(pred, -diff)
+                    priority.update(pred, -diff)
