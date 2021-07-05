@@ -67,9 +67,13 @@ class QLearningAgent(ReinforcementAgent):
         if not actionList:
             return None
         Qlist = [self.getQValue(state, action) for action in actionList]
-        maxi = [max(Qlist)]
-        print(maxi)
-        index = [Qlist.index(maxi)]
+        maxi = max(Qlist)
+        index = []
+        i = 0
+        for val in Qlist:
+            if val == maxi:
+                index.append(i)
+            i = i + 1
         bestAction = [actionList[i] for i in index]
         return random.choice(bestAction)
         util.raiseNotDefined()
