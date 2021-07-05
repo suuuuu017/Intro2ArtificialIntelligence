@@ -61,7 +61,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         for nextState, prob in probList:
             QVal = prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState]) + QVal
         return QVal
-        util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
         """
@@ -87,7 +86,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         valueList.sortedKeys()
         bestAction = valueList.argMax()
         return bestAction
-        util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
