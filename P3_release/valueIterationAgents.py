@@ -38,7 +38,7 @@ class ValueIterationAgent(ValueEstimationAgent):
             newValue = self.values.copy()
             for state in self.mdp.getStates():
                 bestAction = self.computeActionFromValues(state)
-                if bestAction:
+                if not self.mdp.isTerminal(state):
                     newValue[state] = self.computeQValueFromValues(state, bestAction)
             self.values = newValue
 
@@ -73,7 +73,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
         actionList = self.mdp.getPossibleActions(state)
-        if not len(actionList):
+        if self.mdp.isTerminal(state):
             return None
         valueList = util.Counter()
         for action in actionList:
@@ -131,7 +131,7 @@ class AsynchronousValueIterationAgent(ValueIterationAgent):
             stateNum = len(self.mdp.getStates())
             state = self.mdp.getStates()[i % stateNum]
             bestAction = self.computeActionFromValues(state)
-            if bestAction:
+            if not self.mdp.isTerminal(state):
                 newValue[state] = self.computeQValueFromValues(state, bestAction)
             self.values = newValue
 
