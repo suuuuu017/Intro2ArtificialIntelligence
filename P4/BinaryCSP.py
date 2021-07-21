@@ -1,5 +1,6 @@
 # Hint: from collections import deque
 from Interface import *
+# from collections import deque
 
 
 # = = = = = = = QUESTION 1  = = = = = = = #
@@ -23,6 +24,16 @@ def consistent(assignment, csp, var, value):
         True if the value would be consistent with all currently assigned values, False otherwise
     """
     # TODO: Question 1
+    for constraint in csp.binaryConstraints:
+        if constraint.affects(var):
+            var2 = constraint.otherVariable(var)
+            if assignment.isAssigned(var2):
+                value2 = assignment.assignedValues[var2]
+                if not constraint.isSatisfied(value, value2):
+                    return False
+    return True
+    #why it is true for others
+
     raise_undefined_error()
 
 
@@ -54,6 +65,24 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
         A completed and consistent assignment. None if no solution exists.
     """
     # TODO: Question 1
+    if assignment.isComplete():
+        return assignment
+    # import pdb; pdb.set_trace()
+    var = selectVariableMethod(assignment, csp)
+    if not var:
+        return None
+    # where is the selectVariableMetho defined?
+    for val in orderValuesMethod(assignment, csp, var):
+        # import pdb;
+        # pdb.set_trace()
+        if consistent(assignment, csp, var, val):
+            assignment.assignedValues[var] = val
+            result = recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMethod, inferenceMethod)
+            # import pdb; pdb.set_trace()
+            if result is not None:
+                return result
+        assignment.assignedValues[var] = None
+    return None
     raise_undefined_error()
 
 
@@ -107,7 +136,27 @@ def minimumRemainingValuesHeuristic(assignment, csp):
     domains = assignment.varDomains
 
     # TODO: Question 2
+    min = float('inf')
+    maxDegree = -1 * float('inf')
+    for var in domains:
+        if not assignment.isAssigned(var):
+            if len(domains[var]) < min:
+                nextVar = var
+                min = len(domains[var])
+                maxDegree = degreeHeuristics(var, assignment, csp)
+            if len(domains[var]) == min:
+                if degreeHeuristics(var, assignment, csp) > maxDegree:
+                    nextVar = var
+                    maxDegree = degreeHeuristics(var, assignment, csp)
+    return nextVar
     raise_undefined_error()
+
+def degreeHeuristics(var, assignment, csp):
+    count = 0
+    for rest in csp.binaryConstraints:
+        if not assignment.isAssigned(rest.otherVariable(var)) and rest.affects(var):
+            count = count + 1
+    return count
 
 
 def orderValues(assignment, csp, var):
@@ -120,6 +169,10 @@ def orderValues(assignment, csp, var):
 
 # = = = = = = = QUESTION 3  = = = = = = = #
 
+def takeSecond(elem):
+    return elem[1]
+def takeFirst(elem):
+    return elem[0]
 
 def leastConstrainingValuesHeuristic(assignment, csp, var):
     """
@@ -136,6 +189,20 @@ def leastConstrainingValuesHeuristic(assignment, csp, var):
         a list of the possible values ordered by the least constraining value heuristic
     """
     # TODO: Question 3
+    valList = []
+    for val in assignment.varDomains[var]:
+        count = 0
+        constraints = [cons for cons in csp.binaryConstraints]
+        for constraint in constraints:
+            if constraint.affects(var):
+                otherVar = constraint.otherVariable(var)
+                for otherVal in assignment.varDomains[otherVar]:
+                    if not constraint.isSatisfied(val, otherVal):
+                        count = count + 1
+        valList.append((val, count))
+    valList.sort(key = takeSecond)
+
+    return [takeFirst(elem) for elem in valList]
     raise_undefined_error()
 
 
