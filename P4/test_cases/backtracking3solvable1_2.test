@@ -2,5 +2,5 @@ solve
 csp csps/csp7.csp
 function orderValues
 function minimumRemainingValuesHeuristic
-function forwardChecking
+function AC3
 boolean False

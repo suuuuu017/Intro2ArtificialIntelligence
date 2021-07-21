@@ -1,6 +1,6 @@
 # Hint: from collections import deque
 from Interface import *
-# from collections import deque
+from collections import deque
 
 
 # = = = = = = = QUESTION 1  = = = = = = = #
@@ -65,7 +65,7 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
         A completed and consistent assignment. None if no solution exists.
     """
     # TODO: Question 1
-    print(assignment)
+    # print(assignment)
     if assignment.isComplete():
         return assignment
     # import pdb; pdb.set_trace()
@@ -79,6 +79,7 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
         # pdb.set_trace()
         if consistent(assignment, csp, var, val):
             assignment.assignedValues[var] = val
+            #what if use AC3 the inferenceMethod call still right?
             inferences = inferenceMethod(assignment, csp, var, val)
             if inferences is not None:
                 result = recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMethod, inferenceMethod)
@@ -86,7 +87,7 @@ def recursiveBacktracking(assignment, csp, orderValuesMethod, selectVariableMeth
                 if result is not None:
                     return result
                 # for inference in inferences:
-                #     assignment.assignedValues[inference[0]].remove(inference[1])
+                    # assignment.assignedValues[inference[0]].remove(inference[1])
         assignment.assignedValues[var] = None
         if inferences:
             for inference in inferences:
@@ -293,6 +294,20 @@ def revise(assignment, csp, var1, var2, constraint):
     inferences = set([])
 
     # TODO: Question 5
+    for value2 in assignment.varDomains[var2]:
+        flag = False
+        for value1 in assignment.varDomains[var1]:
+            if constraint.isSatisfied(value1, value2):
+                flag = True
+                break
+        if not flag:
+            inferences.add((var2, value2))
+    if len(inferences) == len(assignment.varDomains[var2]):
+        return None
+    for inference in inferences:
+        assignment.varDomains[inference[0]].remove(inference[1])
+    return inferences
+
     raise_undefined_error()
 
 
@@ -318,6 +333,33 @@ def maintainArcConsistency(assignment, csp, var, value):
     inferences = set([])
     domains = assignment.varDomains
 
+    queue = deque()
+
+    constraints = [cons for cons in csp.binaryConstraints]
+    for constraint in constraints:
+        if constraint.affects(var):
+            Xj = constraint.otherVariable(var)
+            if not assignment.isAssigned(Xj):
+                queue.append((var, Xj, constraint))
+
+    while len(queue) > 0:
+        var1, var2, con = queue.pop()
+        inferencesNew = revise(assignment, csp, var1, var2, con)
+        if inferencesNew is None:
+            for inference in inferences:
+                assignment.varDomains[inference[0]].add(inference[1])
+            return None
+        elif len(inferencesNew) > 0:
+            constraints = [cons for cons in csp.binaryConstraints]
+            for constraint in constraints:
+                if constraint.affects(var2):
+                    Xk = constraint.otherVariable(var2)
+                    if not assignment.isAssigned(Xk):
+                        queue.append((var2, Xk, constraint))
+            inferences = inferences.union(inferencesNew)
+    return inferences
+
+
     # TODO: Question 5
     #  Hint: implement revise first and use it as a helper function"""
     raise_undefined_error()
@@ -340,6 +382,36 @@ def AC3(assignment, csp):
         the updated assignment after inferences are made or None if an inconsistent assignment
     """
     inferences = set([])
+    domains = csp.varDomains
+
+    queue = deque()
+
+    for Xi in domains:
+        constraints = [cons for cons in csp.binaryConstraints]
+        for constraint in constraints:
+            if constraint.affects(Xi):
+                Xj = constraint.otherVariable(Xi)
+                queue.append((Xi, Xj, constraint))
+
+    while len(queue) > 0:
+        Xi, Xj, constraint = queue.pop()
+        inferencesNew = revise(assignment, csp, Xi, Xj, constraint)
+        if inferencesNew is None:
+            for inference in inferences:
+                assignment.varDomains[inference[0]].add(inference[1])
+            return None
+        elif len(inferencesNew) > 0:
+            constraints = [cons for cons in csp.binaryConstraints]
+            for constraint in constraints:
+                if constraint.affects(Xj):
+                    Xk = constraint.otherVariable(Xj)
+                    if not assignment.isAssigned(Xk):
+                        queue.append((Xj, Xk, constraint))
+            inferences = inferences.union(inferencesNew)
+    return assignment
+
+
+
 
     # TODO: Question 6
     #  Hint: implement revise first and use it as a helper function"""
