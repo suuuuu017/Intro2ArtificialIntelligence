@@ -2,5 +2,5 @@ solve
 csp csps/csp7.csp
 function orderValues
 function chooseFirstVariable
-function noInferences
+function forwardChecking
 boolean False
